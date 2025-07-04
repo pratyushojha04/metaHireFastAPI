@@ -1,10 +1,10 @@
-# Use Python 3.8 slim as base image to keep size manageable
+# Use Python 3.8 slim for a lightweight base image
 FROM python:3.8-slim
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies for Java, Node.js, C++, and other tools
+# Install system dependencies for Java, Node.js, and C++
 RUN apt-get update && apt-get install -y \
     openjdk-11-jdk \
     nodejs \
@@ -19,23 +19,23 @@ RUN javac --version && java --version && node --version && g++ --version
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy project files
-COPY . .
+# Copy only necessary files
+COPY main.py .
+COPY services/ services/
+COPY api/ api/
+COPY models/ models/
+COPY data/ data/
+COPY .env .
 
 # Create non-root user for security
 RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
 
-# Expose port 8000
-EXPOSE 8000
+# Expose port (Railway assigns PORT dynamically)
+EXPOSE ${PORT:-8000}
 
-# Set environment variables (override with .env file)
-ENV MONGO_URI="mongodb+srv://opratyush12:Ir3BVLKFr0lShShR@metahire.lwcazyx.mongodb.net/?retryWrites=true&w=majority"
-ENV SCORING_METHOD=sbert
-ENV MONGO_DB_NAME=interview_db
-ENV LOG_LEVEL=INFO
-ENV DATA_DIR=data
-ENV PORT=8000
+# Load environment variables from .env file
+ENV PYTHONUNBUFFERED=1
 
-# Command to start the FastAPI server
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Command to start FastAPI server, using PORT from environment
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
