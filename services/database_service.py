@@ -217,8 +217,8 @@ load_dotenv()
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 logger = logging.getLogger(__name__)
 
-# MongoDB connection
-client = MongoClient(os.getenv("MONGO_URI", "mongodb://localhost:27017/"))
+# MongoDB connectionmongodb+srv://opratyush12:Ir3BVLKFr0lShShR@metahire.lwcazyx.mongodb.net/?retryWrites=true&w=majority&appName=metahire
+client = MongoClient(os.getenv("mongodb+srv://opratyush12:Ir3BVLKFr0lShShR@metahire.lwcazyx.mongodb.net/?retryWrites=true&w=majority&appName=metahire"))
 db = client[os.getenv("MONGO_DB_NAME", "interview_db")]
 
 # Data directory
