@@ -1,23 +1,28 @@
-# Use Python 3.8 slim for a lightweight base image
-FROM python:3.8-slim
+# Use a specific tag for python:3.8-slim to ensure consistency
+FROM python:3.8.20-slim
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies for Java, Node.js, and C++
-RUN apt-get update && apt-get install -y \
+# Install system dependencies with retries
+RUN apt-get update && apt-get install -y --no-install-recommends \
     openjdk-11-jdk \
     nodejs \
     npm \
     g++ \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* || (sleep 5 && apt-get update && apt-get install -y --no-install-recommends \
+    openjdk-11-jdk \
+    nodejs \
+    npm \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*)
 
 # Verify installations
 RUN javac --version && java --version && node --version && g++ --version
 
 # Copy requirements.txt and install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt || (sleep 5 && pip install --no-cache-dir -r requirements.txt)
 
 # Copy only necessary files
 COPY main.py .
@@ -34,8 +39,8 @@ USER appuser
 # Expose port (Railway assigns PORT dynamically)
 EXPOSE ${PORT:-8000}
 
-# Load environment variables from .env file
+# Ensure logs are streamed
 ENV PYTHONUNBUFFERED=1
 
-# Command to start FastAPI server, using PORT from environment
+# Command to start FastAPI server
 CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
