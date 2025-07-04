@@ -1,5 +1,5 @@
-# Use a specific, stable base image
-FROM python:3.8-slim-bullseye
+# Use Python 3.9 slim for compatibility with pandas==2.2.2
+FROM python:3.9-slim-bullseye
 
 # Set working directory
 WORKDIR /app
@@ -20,6 +20,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Verify installations
 RUN javac --version && java --version && node --version && g++ --version
+
+# Upgrade pip to the latest version
+RUN pip install --no-cache-dir --upgrade pip
 
 # Copy and install Python dependencies
 COPY requirements.txt .
